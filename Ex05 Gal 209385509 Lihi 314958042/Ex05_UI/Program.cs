@@ -1,10 +1,12 @@
+using System.Windows.Forms;
+
 namespace Ex05_UI
 {
 	public static class Program
 	{
 		public static void Main()
-		{
-			new UIManager();
+        {
+            new UIManager();
 		}
 	}
 }

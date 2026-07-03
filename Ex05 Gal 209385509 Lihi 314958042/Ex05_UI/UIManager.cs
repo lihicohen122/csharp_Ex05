@@ -6,7 +6,6 @@ namespace Ex05_UI
 	{
 		public UIManager()
 		{
-			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
 			GameSettings gameSettings = new FormGameSettings().GetInitPackage();

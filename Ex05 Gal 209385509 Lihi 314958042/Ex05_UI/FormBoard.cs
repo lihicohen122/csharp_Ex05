@@ -25,7 +25,6 @@ namespace Ex05_UI
             r_GameSettings = i_GameSettings;
             r_Game = new Game(r_GameSettings.BoardSize, r_GameSettings.IsVsComputer);
 
-            r_Game.TurnChanged += game_TurnChanged;
             InitializeComponent();
             prepareBoard();
 
@@ -38,9 +37,7 @@ namespace Ex05_UI
         private void InitializeComponent()
         {
             this.r_Player1ScoreLabel = new Ex05_UI.PlayerLabel();
-            this.r_Player1ScoreLabel.IsActiveTurn = true;
             this.r_Player2ScoreLabel = new Ex05_UI.PlayerLabel();
-            this.r_Player2ScoreLabel.IsActiveTurn = false;
             this.SuspendLayout();
 
             // r_Player1ScoreLabel
@@ -52,13 +49,12 @@ namespace Ex05_UI
             // FormBoard
             this.Controls.Add(this.r_Player2ScoreLabel);
             this.Controls.Add(this.r_Player1ScoreLabel);
-            this.FormBorderStyle = FormBorderStyle.Sizable; // 2. Resizable Form Layout
+            this.FormBorderStyle = FormBorderStyle.Sizable;
             this.MaximizeBox = false;
             this.Name = "FormBoard";
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Text = "TicTacToeMisere";
 
-            // 3. Responsive Form Integration - Event Hook
             this.Resize += new EventHandler(this.FormBoard_Resize);
 
             this.ResumeLayout(false);
@@ -75,7 +71,7 @@ namespace Ex05_UI
             int formHeight = boardPixelSize + k_ScorePanelHeight + (k_FormPadding * 2);
 
             ClientSize = new Size(formWidth, formHeight);
-            MinimumSize = new Size(300, 350); // Prevent collapsing
+            MinimumSize = new Size(300, 350);
 
             createBoardButtons(boardSize);
             initializePlayerLabels();
@@ -94,7 +90,6 @@ namespace Ex05_UI
             positionScoreLabels();
         }
 
-        // 1. Player Labels Alignment (Centered horizontally, side-by-side)
         private void positionScoreLabels()
         {
             const int k_Gap = 10;
@@ -117,7 +112,6 @@ namespace Ex05_UI
             m_BoardPanel.Size = new Size(panelSize, panelSize);
             m_BoardPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
-            // Define equal percentage sizing for rows and columns
             for (int i = 0; i < i_BoardSize; i++)
             {
                 m_BoardPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / i_BoardSize));
@@ -131,15 +125,12 @@ namespace Ex05_UI
                 for (int column = 0; column < i_BoardSize; ++column)
                 {
                     Button boardButton = new Button();
-                    boardButton.Dock = DockStyle.Fill; // Scales with TableLayoutPanel
-                    boardButton.Margin = new Padding(2); // 4. Button Grid Spacing (Gap)
-                    boardButton.Font = new Font("Arial", 16, FontStyle.Regular); // 5. Normal Font Weight
+                    boardButton.Dock = DockStyle.Fill;
+                    boardButton.Margin = new Padding(2);
+                    boardButton.Font = new Font("Microsoft Sans Serif", 11f);
                     boardButton.Tag = new Point(row, column);
 
-                    boardButton.FlatStyle = FlatStyle.Flat;
-                    boardButton.BackColor = SystemColors.ControlLight;
-                    boardButton.FlatAppearance.BorderColor = Color.DarkGray;
-
+                    // כפתור נקי לחלוטין - המנוע הקלאסי יצייר אותו כתלת-מימד
                     boardButton.Click += boardButton_Click;
 
                     m_BoardButtons[row, column] = boardButton;
@@ -150,31 +141,44 @@ namespace Ex05_UI
             Controls.Add(m_BoardPanel);
         }
 
-        // 3. Responsive Form Integration - Dynamic Resizing
         private void FormBoard_Resize(object sender, EventArgs e)
         {
             positionScoreLabels();
 
             if (m_BoardButtons != null && m_BoardButtons[0, 0] != null)
             {
-                // Calculate dynamic font size based on current button height
                 int buttonHeight = m_BoardButtons[0, 0].Height;
-                float newFontSize = Math.Max(8f, buttonHeight / 3f);
+                float newFontSize = Math.Max(8f, buttonHeight / 3.5f);
 
                 for (int row = 0; row < r_GameSettings.BoardSize; ++row)
                 {
                     for (int column = 0; column < r_GameSettings.BoardSize; ++column)
                     {
-                        m_BoardButtons[row, column].Font = new Font("Arial", newFontSize, FontStyle.Regular);
+                        m_BoardButtons[row, column].Font = new Font("Microsoft Sans Serif", newFontSize);
                     }
                 }
             }
         }
 
-        private void OnTurnChanged()
+        private void UpdateTurnDisplay()
         {
-            r_Player1ScoreLabel.Font = new Font(r_Player1ScoreLabel.Font, r_Player1ScoreLabel.IsActiveTurn ? FontStyle.Bold : FontStyle.Regular);
-            r_Player2ScoreLabel.Font = new Font(r_Player2ScoreLabel.Font, r_Player2ScoreLabel.IsActiveTurn ? FontStyle.Bold : FontStyle.Regular);
+            int filledCellsCount = 0;
+
+            for (int row = 0; row < r_Game.BoardSize; ++row)
+            {
+                for (int column = 0; column < r_Game.BoardSize; ++column)
+                {
+                    if (r_Game.GetCellSign(row, column) != eCellSign.Empty)
+                    {
+                        filledCellsCount++;
+                    }
+                }
+            }
+
+            bool isPlayer1Turn = (filledCellsCount % 2 == 0);
+
+            r_Player1ScoreLabel.IsActiveTurn = isPlayer1Turn;
+            r_Player2ScoreLabel.IsActiveTurn = !isPlayer1Turn;
         }
 
         private void OnScoreUpdated()
@@ -197,18 +201,6 @@ namespace Ex05_UI
 
                     m_BoardButtons[row, column].Text = getSignAsString(cellSign);
                     m_BoardButtons[row, column].Enabled = isEmpty;
-
-                    // 5. Disabled Cell State Modernization
-                    if (!isEmpty)
-                    {
-                        m_BoardButtons[row, column].BackColor = Color.WhiteSmoke;
-                        m_BoardButtons[row, column].ForeColor = Color.DimGray;
-                    }
-                    else
-                    {
-                        m_BoardButtons[row, column].BackColor = SystemColors.ControlLight;
-                        m_BoardButtons[row, column].ForeColor = Control.DefaultForeColor;
-                    }
                 }
             }
         }
@@ -266,7 +258,7 @@ namespace Ex05_UI
         {
             OnBoardUpdated();
             OnScoreUpdated();
-            OnTurnChanged();
+            UpdateTurnDisplay();
 
             if (r_Game.GameState == eGameState.Playing && r_Game.IsCurrentPlayerComputer)
             {
@@ -274,7 +266,7 @@ namespace Ex05_UI
 
                 OnBoardUpdated();
                 OnScoreUpdated();
-                OnTurnChanged();
+                UpdateTurnDisplay();
             }
 
             if (r_Game.GameState != eGameState.Playing)
@@ -291,12 +283,6 @@ namespace Ex05_UI
                 r_Game.PlayUserTurn(cellLocation.X, cellLocation.Y);
                 processTurnFlow();
             }
-        }
-
-        private void game_TurnChanged(bool i_IsPlayer1Turn)
-        {
-            r_Player1ScoreLabel.IsActiveTurn = i_IsPlayer1Turn;
-            r_Player2ScoreLabel.IsActiveTurn = !i_IsPlayer1Turn;
         }
     }
 }
