@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.Windows.Forms;
 
 namespace Ex05_UI
@@ -23,12 +22,6 @@ namespace Ex05_UI
         private NumericUpDown m_ColumnsNumericUpDown;
         private Button m_PlayButton;
         private bool m_IsUpdatingBoardSize;
-
-        public FormGameSettings()
-        {
-            InitializeComponent();
-            initializeBoardSizeControls();
-        }
 
         #region Windows Form Designer generated code
 
@@ -172,7 +165,6 @@ namespace Ex05_UI
             ((System.ComponentModel.ISupportInitialize)(this.m_ColumnsNumericUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
@@ -192,7 +184,7 @@ namespace Ex05_UI
 
         private void syncBoardSize(NumericUpDown i_SourceNumericUpDown, NumericUpDown i_TargetNumericUpDown)
         {
-            if (!m_IsUpdatingBoardSize)
+            if(!m_IsUpdatingBoardSize)
             {
                 m_IsUpdatingBoardSize = true;
                 i_TargetNumericUpDown.Value = i_SourceNumericUpDown.Value;
@@ -202,9 +194,8 @@ namespace Ex05_UI
 
         private void boardSizeNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            NumericUpDown sourceNumericUpDown = (NumericUpDown)sender;
-            NumericUpDown targetNumericUpDown = sourceNumericUpDown == m_RowsNumericUpDown ?
-                m_ColumnsNumericUpDown : m_RowsNumericUpDown;
+            NumericUpDown sourceNumericUpDown = sender as NumericUpDown;
+            NumericUpDown targetNumericUpDown = sourceNumericUpDown == m_RowsNumericUpDown ? m_ColumnsNumericUpDown : m_RowsNumericUpDown;
 
             syncBoardSize(sourceNumericUpDown, targetNumericUpDown);
         }
@@ -217,7 +208,7 @@ namespace Ex05_UI
 
         private void player2CheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_Player2CheckBox.Checked)
+            if(m_Player2CheckBox.Checked)
             {
                 m_Player2NameTextBox.Enabled = true;
                 m_Player2NameTextBox.Text = string.Empty;
@@ -235,7 +226,7 @@ namespace Ex05_UI
 
         private void playButton_Click(object sender, EventArgs e)
         {
-            if (!arePlayerNamesValid())
+            if(!arePlayerNamesValid())
             {
                 MessageBox.Show("Please provide both player's names.", "Invalid input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
@@ -248,23 +239,29 @@ namespace Ex05_UI
         private GameSettings buildGameSettings()
         {
             bool isVsComputer = !m_Player2CheckBox.Checked;
-            int boardSize = (int)m_RowsNumericUpDown.Value;
+            int boardSize = Convert.ToInt32(m_RowsNumericUpDown.Value);
             string player1Name = m_Player1NameTextBox.Text.Trim();
             string player2Name = isVsComputer ? k_ComputerPlayerName : m_Player2NameTextBox.Text.Trim();
 
             return new GameSettings(boardSize, isVsComputer, player1Name, player2Name);
         }
 
-        public GameSettings GetInitPackage()
+        public FormGameSettings()
         {
-            GameSettings initPackage = null;
+            InitializeComponent();
+            initializeBoardSizeControls();
+        }
 
-            if (ShowDialog() == DialogResult.OK)
+        public GameSettings ShowAndGetSettings()
+        {
+            GameSettings gameSettings = null;
+
+            if(ShowDialog() == DialogResult.OK)
             {
-                initPackage = buildGameSettings();
+                gameSettings = buildGameSettings();
             }
 
-            return initPackage;
+            return gameSettings;
         }
     }
 }

@@ -17,16 +17,7 @@ namespace Ex05_UI
         private PlayerLabel m_Player2ScoreLabel;
         private Button[,] m_BoardButtons;
         private TableLayoutPanel m_BoardPanel;
-
-        public FormBoard(GameSettings i_GameSettings)
-        {
-            r_GameSettings = i_GameSettings;
-            r_Game = new Game(r_GameSettings.BoardSize, r_GameSettings.IsVsComputer);
-            InitializeComponent();
-            prepareBoard();
-            r_Game.StartNewGame();
-            processTurnFlow();
-        }
+        private bool m_IsPlayer1Turn;
 
         #region Windows Form Designer generated code
 
@@ -87,8 +78,8 @@ namespace Ex05_UI
         {
             const int k_Gap = 10;
             int totalWidth = m_Player1ScoreLabel.Width + k_Gap + m_Player2ScoreLabel.Width;
-            int startX = (this.ClientSize.Width - totalWidth) / 2;
-            int startY = this.ClientSize.Height - k_ScorePanelHeight + 10;
+            int startX = (ClientSize.Width - totalWidth) / 2;
+            int startY = ClientSize.Height - k_ScorePanelHeight + 10;
 
             m_Player1ScoreLabel.Location = new Point(startX, startY);
             m_Player2ScoreLabel.Location = new Point(startX + m_Player1ScoreLabel.Width + k_Gap, startY);
@@ -96,35 +87,14 @@ namespace Ex05_UI
 
         private void createBoardButtons(int i_BoardSize)
         {
-            m_BoardPanel = new TableLayoutPanel();
-            m_BoardPanel.RowCount = i_BoardSize;
-            m_BoardPanel.ColumnCount = i_BoardSize;
-            m_BoardPanel.Location = new Point(k_FormPadding, k_FormPadding);
-            int panelSize = ClientSize.Width - (k_FormPadding * 2);
-
-            m_BoardPanel.Size = new Size(panelSize, panelSize);
-            m_BoardPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-
-            for(int i = 0; i < i_BoardSize; i++)
-            {
-                m_BoardPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / i_BoardSize));
-                m_BoardPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100f / i_BoardSize));
-            }
-
+            initializeBoardPanel(i_BoardSize);
             m_BoardButtons = new Button[i_BoardSize, i_BoardSize];
-
             for(int row = 0; row < i_BoardSize; ++row)
             {
                 for(int column = 0; column < i_BoardSize; ++column)
                 {
-                    Button boardButton = new Button();
+                    Button boardButton = createNewButton(row, column);
 
-                    boardButton.Dock = DockStyle.Fill;
-                    boardButton.Margin = new Padding(2);
-                    boardButton.Font = new Font("Microsoft Sans Serif", 11f);
-                    boardButton.Tag = new Point(row, column);
-                    boardButton.Click += boardButton_Click;
-                    m_BoardButtons[row, column] = boardButton;
                     m_BoardPanel.Controls.Add(boardButton, column, row);
                 }
             }
@@ -132,10 +102,40 @@ namespace Ex05_UI
             Controls.Add(m_BoardPanel);
         }
 
+        private void initializeBoardPanel(int i_BoardSize)
+        {
+            int panelSize = ClientSize.Width - (k_FormPadding * 2);
+
+            m_BoardPanel = new TableLayoutPanel();
+            m_BoardPanel.RowCount = i_BoardSize;
+            m_BoardPanel.ColumnCount = i_BoardSize;
+            m_BoardPanel.Location = new Point(k_FormPadding, k_FormPadding);
+            m_BoardPanel.Size = new Size(panelSize, panelSize);
+            m_BoardPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            for(int i = 0; i < i_BoardSize; ++i)
+            {
+                m_BoardPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / i_BoardSize));
+                m_BoardPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100f / i_BoardSize));
+            }
+        }
+
+        private Button createNewButton(int i_Row, int i_Column)
+        {
+            Button boardButton = new Button();
+
+            boardButton.Dock = DockStyle.Fill;
+            boardButton.Margin = new Padding(2);
+            boardButton.Font = new Font("Microsoft Sans Serif", 11);
+            boardButton.Tag = new Point(i_Row, i_Column);
+            boardButton.Click += boardButton_Click;
+            m_BoardButtons[i_Row, i_Column] = boardButton;
+
+            return boardButton;
+        }
+
         private void formBoard_Resize(object sender, EventArgs e)
         {
             positionScoreLabels();
-
             if(m_BoardButtons != null && m_BoardButtons[0, 0] != null)
             {
                 int buttonHeight = m_BoardButtons[0, 0].Height;
@@ -153,31 +153,16 @@ namespace Ex05_UI
 
         private void updateTurnDisplay()
         {
-            int filledCellsCount = 0;
-
-            for(int row = 0; row < r_Game.BoardSize; ++row)
-            {
-                for(int column = 0; column < r_Game.BoardSize; ++column)
-                {
-                    if(r_Game.GetCellSign(row, column) != eCellSign.Empty)
-                    {
-                        filledCellsCount++;
-                    }
-                }
-            }
-
-            bool isPlayer1Turn = (filledCellsCount % 2 == 0);
-
-            m_Player1ScoreLabel.IsActiveTurn = isPlayer1Turn;
-            m_Player2ScoreLabel.IsActiveTurn = !isPlayer1Turn;
+            m_Player1ScoreLabel.IsActiveTurn = m_IsPlayer1Turn;
+            m_Player2ScoreLabel.IsActiveTurn = !m_IsPlayer1Turn;
         }
 
         private void onScoreUpdated()
         {
             int[] playersScore = r_Game.GetAllPlayersScore();
+
             m_Player1ScoreLabel.Score = playersScore[0];
             m_Player2ScoreLabel.Score = playersScore[1];
-
             positionScoreLabels();
         }
 
@@ -214,8 +199,8 @@ namespace Ex05_UI
 
         private void handleRoundEnd()
         {
-            string messageBoxText = string.Empty;
-            string messageBoxTitle = string.Empty;
+            string messageBoxText;
+            string messageBoxTitle;
 
             if(r_Game.GameState == eGameState.Tie)
             {
@@ -226,18 +211,16 @@ namespace Ex05_UI
             {
                 messageBoxTitle = "A Win!";
                 string winner = (r_Game.GameState == eGameState.Player1Won) ? r_GameSettings.Player1Name : r_GameSettings.Player2Name;
+
                 messageBoxText = $"The winner is {winner}!{Environment.NewLine}Would you like to play another round?";
             }
 
-            DialogResult userChoice = MessageBox.Show(
-                messageBoxText,
-                messageBoxTitle,
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.None);
+            DialogResult userChoice = MessageBox.Show(messageBoxText, messageBoxTitle, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
             if (userChoice == DialogResult.Yes)
             {
                 r_Game.StartNewGame();
+                m_IsPlayer1Turn = true;
                 processTurnFlow();
             }
             else
@@ -251,11 +234,10 @@ namespace Ex05_UI
             onBoardUpdated();
             onScoreUpdated();
             updateTurnDisplay();
-
             if(r_Game.GameState == eGameState.Playing && r_Game.IsCurrentPlayerComputer)
             {
                 r_Game.PlayComputerTurn();
-
+                m_IsPlayer1Turn = !m_IsPlayer1Turn;
                 onBoardUpdated();
                 onScoreUpdated();
                 updateTurnDisplay();
@@ -274,8 +256,20 @@ namespace Ex05_UI
                 Point cellLocation = (Point)((Button)sender).Tag;
 
                 r_Game.PlayUserTurn(cellLocation.X, cellLocation.Y);
+                m_IsPlayer1Turn = !m_IsPlayer1Turn;
                 processTurnFlow();
             }
+        }
+
+        public FormBoard(GameSettings i_GameSettings)
+        {
+            r_GameSettings = i_GameSettings;
+            r_Game = new Game(r_GameSettings.BoardSize, r_GameSettings.IsVsComputer);
+            InitializeComponent();
+            prepareBoard();
+            r_Game.StartNewGame();
+            m_IsPlayer1Turn = true;
+            processTurnFlow();
         }
     }
 }

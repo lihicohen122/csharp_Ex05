@@ -7,7 +7,7 @@ namespace Ex05_UI
 		public UIManager()
 		{
 			Application.SetCompatibleTextRenderingDefault(false);
-			GameSettings gameSettings = new FormGameSettings().GetInitPackage();
+			GameSettings gameSettings = new FormGameSettings().ShowAndGetSettings();
 
 			if(gameSettings != null)
 			{

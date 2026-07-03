@@ -9,13 +9,24 @@ namespace Ex05_UI
         private int m_Score = 0;
         private bool m_IsActiveTurn = false;
 
+        private void updateDisplayText()
+        {
+            Text = $"{m_PlayerName}: {m_Score}";
+        }
+
+        public PlayerLabel()
+        {
+            AutoSize = true;
+            Font = new Font("Microsoft Sans Serif", 10);
+        }
+
         public string PlayerName
         {
             get { return m_PlayerName; }
             set
             {
                 m_PlayerName = value;
-                UpdateDisplayText();
+                updateDisplayText();
             }
         }
 
@@ -25,7 +36,7 @@ namespace Ex05_UI
             set
             {
                 m_Score = value;
-                UpdateDisplayText();
+                updateDisplayText();
             }
         }
 
@@ -35,19 +46,8 @@ namespace Ex05_UI
             set
             {
                 m_IsActiveTurn = value;
-                this.Font = new Font(this.Font, m_IsActiveTurn ? FontStyle.Bold : FontStyle.Regular);
+                Font = new Font(Font, m_IsActiveTurn ? FontStyle.Bold : FontStyle.Regular);
             }
-        }
-
-        public PlayerLabel()
-        {
-            this.AutoSize = true;
-            this.Font = new Font("Microsoft Sans Serif", 10);
-        }
-
-        private void UpdateDisplayText()
-        {
-            this.Text = $"{m_PlayerName}: {m_Score}";
         }
     }
 }

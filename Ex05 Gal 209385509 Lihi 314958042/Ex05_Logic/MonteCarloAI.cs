@@ -15,7 +15,7 @@ namespace Ex05_Logic
         private int simulateSinglePlayRound(Board i_SimulatedBoard, int i_FirstMoveRow, int i_FirstMoveColumn,
                                             eCellSign i_ComputerSign, eCellSign i_HumanSign)
         {
-            int playOutScore = 0;
+            int playOutScore;
 
             i_SimulatedBoard.TryUpdateCell(i_FirstMoveRow, i_FirstMoveColumn, i_ComputerSign);
             bool isGameOver = i_SimulatedBoard.CheckWinningSequence(i_FirstMoveRow, i_FirstMoveColumn, i_ComputerSign);
@@ -26,30 +26,40 @@ namespace Ex05_Logic
             }
             else
             {
-                eCellSign currentTurnSign = i_HumanSign;
+                playOutScore = completeSimulationUntilEnd(i_SimulatedBoard, i_ComputerSign, i_HumanSign);
+            }
 
-                while(!isGameOver && !i_SimulatedBoard.IsBoardFull())
+            return playOutScore;
+        }
+
+        private int completeSimulationUntilEnd(Board i_SimulatedBoard, eCellSign i_ComputerSign, eCellSign i_HumanSign)
+        {
+            int playOutScore = k_TieWeight;
+            eCellSign currentTurnSign = i_HumanSign;
+            bool isGameOver = false;
+
+            while(!isGameOver && !i_SimulatedBoard.IsBoardFull())
+            {
+                executeRandomMove(i_SimulatedBoard, currentTurnSign, out isGameOver);
+
+                if(isGameOver)
                 {
-                    getRandomEmptyCell(i_SimulatedBoard, out int randomRow, out int randomColumn);
-                    i_SimulatedBoard.TryUpdateCell(randomRow, randomColumn, currentTurnSign);
-                    isGameOver = i_SimulatedBoard.CheckWinningSequence(randomRow, randomColumn, currentTurnSign);
-                    if(isGameOver)
-                    {
-                        playOutScore = currentTurnSign == i_HumanSign ? k_WinWeight : k_LoseWeight;
-                    }
-                    else
-                    {
-                        currentTurnSign = currentTurnSign == i_HumanSign ? i_ComputerSign : i_HumanSign;
-                    }
+                    playOutScore = currentTurnSign == i_HumanSign ? k_WinWeight : k_LoseWeight;
                 }
-
-                if(!isGameOver && i_SimulatedBoard.IsBoardFull())
+                else
                 {
-                    playOutScore = k_TieWeight;
+                    currentTurnSign = currentTurnSign == i_HumanSign ? i_ComputerSign : i_HumanSign;
                 }
             }
 
             return playOutScore;
+        }
+
+        private void executeRandomMove(Board i_Board, eCellSign i_CurrentTurnSign, out bool o_IsGameOver)
+        {
+            getRandomEmptyCell(i_Board, out int randomRow, out int randomColumn);
+            i_Board.TryUpdateCell(randomRow, randomColumn, i_CurrentTurnSign);
+            o_IsGameOver = i_Board.CheckWinningSequence(randomRow, randomColumn, i_CurrentTurnSign);
         }
 
         private void getRandomEmptyCell(Board i_Board, out int o_Row, out int o_Column)
