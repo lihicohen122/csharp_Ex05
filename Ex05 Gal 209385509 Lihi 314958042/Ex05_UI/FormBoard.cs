@@ -6,221 +6,297 @@ using Ex05_Logic.Enums;
 
 namespace Ex05_UI
 {
-	public class FormBoard : Form
-	{
-		private const int k_ButtonSize = 55;
-		private const int k_ScorePanelHeight = 45;
-		private const int k_FormPadding = 12;
-		private const string k_TieMessage = "Tie!";
-		private const string k_AnotherRoundQuestion = "Do you want another round?";
-		private const string k_MessageBoxTitle = "TicTacToeReverse";
-		private readonly GameSettings r_GameSettings;
-		private readonly Game r_Game;
-		private readonly Label r_Player1ScoreLabel;
-		private readonly Label r_Player2ScoreLabel;
-		private Button[,] m_BoardButtons;
+    public class FormBoard : Form
+    {
+        private const int k_ButtonSize = 55;
+        private const int k_ScorePanelHeight = 45;
+        private const int k_FormPadding = 12;
 
-		private void prepareBoard()
-		{
-			int boardSize = r_GameSettings.BoardSize;
-			int boardPixelSize = boardSize * k_ButtonSize;
-			int formWidth = boardPixelSize + (k_FormPadding * 2);
-			int formHeight = boardPixelSize + k_ScorePanelHeight + (k_FormPadding * 2);
+        private readonly GameSettings r_GameSettings;
+        private readonly Game r_Game;
 
-			Text = k_MessageBoxTitle;
-			FormBorderStyle = FormBorderStyle.FixedSingle;
-			MaximizeBox = false;
-			StartPosition = FormStartPosition.CenterScreen;
-			ClientSize = new Size(formWidth, formHeight);
+        private PlayerLabel r_Player1ScoreLabel;
+        private PlayerLabel r_Player2ScoreLabel;
+        private Button[,] m_BoardButtons;
+        private TableLayoutPanel m_BoardPanel;
 
-			createBoardButtons(boardSize);
-			setPlayerLabels(boardPixelSize);
-		}
+        public FormBoard(GameSettings i_GameSettings)
+        {
+            r_GameSettings = i_GameSettings;
+            r_Game = new Game(r_GameSettings.BoardSize, r_GameSettings.IsVsComputer);
 
-		private void setPlayerLabels(int i_BoardPixelSize)
-		{
-			int scoreLabelsTop = k_FormPadding + i_BoardPixelSize + 8;
+            r_Game.TurnChanged += game_TurnChanged;
+            InitializeComponent();
+            prepareBoard();
 
-			r_Player1ScoreLabel.AutoSize = true;
-			r_Player1ScoreLabel.Font = new Font(r_Player1ScoreLabel.Font.FontFamily, 11, FontStyle.Bold);
+            r_Game.StartNewGame();
+            processTurnFlow();
+        }
 
-			r_Player2ScoreLabel.AutoSize = true;
-			r_Player2ScoreLabel.Font = new Font(r_Player2ScoreLabel.Font.FontFamily, 11, FontStyle.Bold);
+        #region Windows Form Designer generated code
 
-			Controls.Add(r_Player1ScoreLabel);
-			Controls.Add(r_Player2ScoreLabel);
+        private void InitializeComponent()
+        {
+            this.r_Player1ScoreLabel = new Ex05_UI.PlayerLabel();
+            this.r_Player1ScoreLabel.IsActiveTurn = true;
+            this.r_Player2ScoreLabel = new Ex05_UI.PlayerLabel();
+            this.r_Player2ScoreLabel.IsActiveTurn = false;
+            this.SuspendLayout();
 
-			updateScoreLabel(r_Player1ScoreLabel, r_GameSettings.Player1Name, 0);
-			updateScoreLabel(r_Player2ScoreLabel, r_GameSettings.Player2Name, 0);
-			positionScoreLabels(scoreLabelsTop);
-		}
+            // r_Player1ScoreLabel
+            this.r_Player1ScoreLabel.Name = "r_Player1ScoreLabel";
 
-		private void positionScoreLabels(int i_ScoreLabelsTop)
-		{
-			r_Player1ScoreLabel.Location = new Point(k_FormPadding, i_ScoreLabelsTop);
-			r_Player2ScoreLabel.Location = new Point(
-				ClientSize.Width - r_Player2ScoreLabel.Width - k_FormPadding, i_ScoreLabelsTop);
-		}
+            // r_Player2ScoreLabel
+            this.r_Player2ScoreLabel.Name = "r_Player2ScoreLabel";
 
-		private void createBoardButtons(int i_BoardSize)
-		{
-			int boardTop = k_FormPadding;
+            // FormBoard
+            this.Controls.Add(this.r_Player2ScoreLabel);
+            this.Controls.Add(this.r_Player1ScoreLabel);
+            this.FormBorderStyle = FormBorderStyle.Sizable; // 2. Resizable Form Layout
+            this.MaximizeBox = false;
+            this.Name = "FormBoard";
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "TicTacToeMisere";
 
-			m_BoardButtons = new Button[i_BoardSize, i_BoardSize];
-			for(int row = 0; row < i_BoardSize; ++row)
-			{
-				for(int column = 0; column < i_BoardSize; ++column)
-				{
-					Button boardButton = new Button();
+            // 3. Responsive Form Integration - Event Hook
+            this.Resize += new EventHandler(this.FormBoard_Resize);
 
-					boardButton.Size = new Size(k_ButtonSize, k_ButtonSize);
-					boardButton.Location = new Point(k_FormPadding + (column * k_ButtonSize), boardTop + (row * k_ButtonSize));
-					boardButton.Font = new Font("Arial", 16, FontStyle.Bold);
-					boardButton.Tag = new Point(row, column);
-					boardButton.Click += boardButton_Click;
+            this.ResumeLayout(false);
+            this.PerformLayout();
+        }
 
-					m_BoardButtons[row, column] = boardButton;
-					Controls.Add(boardButton);
-				}
-			}
-		}
+        #endregion
 
-		private void updateScoreLabel(Label i_ScoreLabel, string i_PlayerName, int i_PlayerScore)
-		{
-			i_ScoreLabel.Text = $"{i_PlayerName}: {i_PlayerScore}";
-		}
+        private void prepareBoard()
+        {
+            int boardSize = r_GameSettings.BoardSize;
+            int boardPixelSize = boardSize * k_ButtonSize;
+            int formWidth = boardPixelSize + (k_FormPadding * 2);
+            int formHeight = boardPixelSize + k_ScorePanelHeight + (k_FormPadding * 2);
 
-		private void updateScoreLabels()
-		{
-			int[] playersScore = r_Game.GetAllPlayersScore();
-			int scoreLabelsTop = k_FormPadding + (r_Game.BoardSize * k_ButtonSize) + 8;
+            ClientSize = new Size(formWidth, formHeight);
+            MinimumSize = new Size(300, 350); // Prevent collapsing
 
-			updateScoreLabel(r_Player1ScoreLabel, r_GameSettings.Player1Name, playersScore[0]);
-			updateScoreLabel(r_Player2ScoreLabel, r_GameSettings.Player2Name, playersScore[1]);
-			positionScoreLabels(scoreLabelsTop);
-		}
+            createBoardButtons(boardSize);
+            initializePlayerLabels();
+        }
 
-		private string getSignAsString(eCellSign i_CellSign)
-		{
-			string signAsString = string.Empty;
+        private void initializePlayerLabels()
+        {
+            r_Player1ScoreLabel.PlayerName = r_GameSettings.Player1Name;
+            r_Player1ScoreLabel.Score = 0;
+            r_Player1ScoreLabel.Anchor = AnchorStyles.Bottom;
 
-			if(i_CellSign == eCellSign.Cross)
-			{
-				signAsString = "X";
-			}
-			else if(i_CellSign == eCellSign.Circle)
-			{
-				signAsString = "O";
-			}
+            r_Player2ScoreLabel.PlayerName = r_GameSettings.Player2Name;
+            r_Player2ScoreLabel.Score = 0;
+            r_Player2ScoreLabel.Anchor = AnchorStyles.Bottom;
 
-			return signAsString;
-		}
+            positionScoreLabels();
+        }
 
-		private void updateBoardButton(Button i_BoardButton, int i_Row, int i_Column)
-		{
-			eCellSign cellSign = r_Game.GetCellSign(i_Row, i_Column);
+        // 1. Player Labels Alignment (Centered horizontally, side-by-side)
+        private void positionScoreLabels()
+        {
+            const int k_Gap = 10;
+            int totalWidth = r_Player1ScoreLabel.Width + k_Gap + r_Player2ScoreLabel.Width;
+            int startX = (this.ClientSize.Width - totalWidth) / 2;
+            int startY = this.ClientSize.Height - k_ScorePanelHeight + 10;
 
-			i_BoardButton.Text = getSignAsString(cellSign);
-			i_BoardButton.Enabled = cellSign == eCellSign.Empty;
-		}
+            r_Player1ScoreLabel.Location = new Point(startX, startY);
+            r_Player2ScoreLabel.Location = new Point(startX + r_Player1ScoreLabel.Width + k_Gap, startY);
+        }
 
-		private void updateBoardDisplay()
-		{
-			int boardSize = r_Game.BoardSize;
+        private void createBoardButtons(int i_BoardSize)
+        {
+            m_BoardPanel = new TableLayoutPanel();
+            m_BoardPanel.RowCount = i_BoardSize;
+            m_BoardPanel.ColumnCount = i_BoardSize;
+            m_BoardPanel.Location = new Point(k_FormPadding, k_FormPadding);
 
-			for(int row = 0; row < boardSize; ++row)
-			{
-				for(int column = 0; column < boardSize; ++column)
-				{
-					updateBoardButton(m_BoardButtons[row, column], row, column);
-				}
-			}
+            int panelSize = ClientSize.Width - (k_FormPadding * 2);
+            m_BoardPanel.Size = new Size(panelSize, panelSize);
+            m_BoardPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
-			updateScoreLabels();
-		}
+            // Define equal percentage sizing for rows and columns
+            for (int i = 0; i < i_BoardSize; i++)
+            {
+                m_BoardPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / i_BoardSize));
+                m_BoardPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100f / i_BoardSize));
+            }
 
-		private string buildRoundEndMessage()
-		{
-			string roundEndMessage = string.Empty;
+            m_BoardButtons = new Button[i_BoardSize, i_BoardSize];
 
-			if(r_Game.GameState == eGameState.Tie)
-			{
-				roundEndMessage = k_TieMessage;
-			}
-			else if(r_Game.GameState == eGameState.Player1Won)
-			{
-				roundEndMessage = $"{r_GameSettings.Player1Name} Won!";
-			}
-			else if(r_Game.GameState == eGameState.Player2Won)
-			{
-				roundEndMessage = $"{r_GameSettings.Player2Name} Won!";
-			}
+            for (int row = 0; row < i_BoardSize; ++row)
+            {
+                for (int column = 0; column < i_BoardSize; ++column)
+                {
+                    Button boardButton = new Button();
+                    boardButton.Dock = DockStyle.Fill; // Scales with TableLayoutPanel
+                    boardButton.Margin = new Padding(2); // 4. Button Grid Spacing (Gap)
+                    boardButton.Font = new Font("Arial", 16, FontStyle.Regular); // 5. Normal Font Weight
+                    boardButton.Tag = new Point(row, column);
 
-			return roundEndMessage;
-		}
+                    boardButton.FlatStyle = FlatStyle.Flat;
+                    boardButton.BackColor = SystemColors.ControlLight;
+                    boardButton.FlatAppearance.BorderColor = Color.DarkGray;
 
-		private void handleRoundEnd()
-		{
-			string messageBoxText = $"{buildRoundEndMessage()}{Environment.NewLine}{k_AnotherRoundQuestion}";
-			DialogResult userChoice = MessageBox.Show(
-				messageBoxText, k_MessageBoxTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    boardButton.Click += boardButton_Click;
 
-			if(userChoice == DialogResult.Yes)
-			{
-				r_Game.StartNewGame();
-				processTurnFlow();
-			}
-			else
-			{
-				Close();
-			}
-		}
+                    m_BoardButtons[row, column] = boardButton;
+                    m_BoardPanel.Controls.Add(boardButton, column, row);
+                }
+            }
 
-		private void processTurnFlow()
-		{
-			updateBoardDisplay();
+            Controls.Add(m_BoardPanel);
+        }
 
-			if(r_Game.GameState == eGameState.Playing && r_Game.IsCurrentPlayerComputer)
-			{
-				r_Game.PlayComputerTurn();
-				updateBoardDisplay();
-			}
+        // 3. Responsive Form Integration - Dynamic Resizing
+        private void FormBoard_Resize(object sender, EventArgs e)
+        {
+            positionScoreLabels();
 
-			if(r_Game.GameState != eGameState.Playing)
-			{
-				handleRoundEnd();
-			}
-		}
+            if (m_BoardButtons != null && m_BoardButtons[0, 0] != null)
+            {
+                // Calculate dynamic font size based on current button height
+                int buttonHeight = m_BoardButtons[0, 0].Height;
+                float newFontSize = Math.Max(8f, buttonHeight / 3f);
 
-		private void getCellLocationFromButton(Button i_Button, out int o_Row, out int o_Column)
-		{
-			Point cellLocation = (Point)i_Button.Tag;
+                for (int row = 0; row < r_GameSettings.BoardSize; ++row)
+                {
+                    for (int column = 0; column < r_GameSettings.BoardSize; ++column)
+                    {
+                        m_BoardButtons[row, column].Font = new Font("Arial", newFontSize, FontStyle.Regular);
+                    }
+                }
+            }
+        }
 
-			o_Row = cellLocation.X;
-			o_Column = cellLocation.Y;
-		}
+        private void OnTurnChanged()
+        {
+            r_Player1ScoreLabel.Font = new Font(r_Player1ScoreLabel.Font, r_Player1ScoreLabel.IsActiveTurn ? FontStyle.Bold : FontStyle.Regular);
+            r_Player2ScoreLabel.Font = new Font(r_Player2ScoreLabel.Font, r_Player2ScoreLabel.IsActiveTurn ? FontStyle.Bold : FontStyle.Regular);
+        }
 
-		private void boardButton_Click(object sender, EventArgs e)
-		{
-			if(!r_Game.IsCurrentPlayerComputer)
-			{
-				getCellLocationFromButton((Button)sender, out int row, out int column);
+        private void OnScoreUpdated()
+        {
+            int[] playersScore = r_Game.GetAllPlayersScore();
+            r_Player1ScoreLabel.Score = playersScore[0];
+            r_Player2ScoreLabel.Score = playersScore[1];
 
-				r_Game.PlayUserTurn(row, column);
-				processTurnFlow();
-			}
-		}
+            positionScoreLabels();
+        }
 
-		public FormBoard(GameSettings i_GameSettings)
-		{
-			r_GameSettings = i_GameSettings;
-			r_Player1ScoreLabel = new Label();
-			r_Player2ScoreLabel = new Label();
-			r_Game = new Game(r_GameSettings.BoardSize, r_GameSettings.IsVsComputer);
+        private void OnBoardUpdated()
+        {
+            for (int row = 0; row < r_Game.BoardSize; ++row)
+            {
+                for (int column = 0; column < r_Game.BoardSize; ++column)
+                {
+                    eCellSign cellSign = r_Game.GetCellSign(row, column);
+                    bool isEmpty = cellSign == eCellSign.Empty;
 
-			prepareBoard();
-			r_Game.StartNewGame();
-			processTurnFlow();
-		}
-	}
+                    m_BoardButtons[row, column].Text = getSignAsString(cellSign);
+                    m_BoardButtons[row, column].Enabled = isEmpty;
+
+                    // 5. Disabled Cell State Modernization
+                    if (!isEmpty)
+                    {
+                        m_BoardButtons[row, column].BackColor = Color.WhiteSmoke;
+                        m_BoardButtons[row, column].ForeColor = Color.DimGray;
+                    }
+                    else
+                    {
+                        m_BoardButtons[row, column].BackColor = SystemColors.ControlLight;
+                        m_BoardButtons[row, column].ForeColor = Control.DefaultForeColor;
+                    }
+                }
+            }
+        }
+
+        private string getSignAsString(eCellSign i_CellSign)
+        {
+            string signAsString = string.Empty;
+            if (i_CellSign == eCellSign.Cross)
+            {
+                signAsString = "X";
+            }
+            else if (i_CellSign == eCellSign.Circle)
+            {
+                signAsString = "O";
+            }
+
+            return signAsString;
+        }
+
+        private void handleRoundEnd()
+        {
+            string messageBoxText = string.Empty;
+            string messageBoxTitle = string.Empty;
+
+            if (r_Game.GameState == eGameState.Tie)
+            {
+                messageBoxTitle = "A Tie!";
+                messageBoxText = $"Tie!{Environment.NewLine}Would you like to play another round?";
+            }
+            else
+            {
+                messageBoxTitle = "A Win!";
+                string winner = (r_Game.GameState == eGameState.Player1Won) ? r_GameSettings.Player1Name : r_GameSettings.Player2Name;
+                messageBoxText = $"The winner is {winner}!{Environment.NewLine}Would you like to play another round?";
+            }
+
+            DialogResult userChoice = MessageBox.Show(
+                messageBoxText,
+                messageBoxTitle,
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.None);
+
+            if (userChoice == DialogResult.Yes)
+            {
+                r_Game.StartNewGame();
+                processTurnFlow();
+            }
+            else
+            {
+                Close();
+            }
+        }
+
+        private void processTurnFlow()
+        {
+            OnBoardUpdated();
+            OnScoreUpdated();
+            OnTurnChanged();
+
+            if (r_Game.GameState == eGameState.Playing && r_Game.IsCurrentPlayerComputer)
+            {
+                r_Game.PlayComputerTurn();
+
+                OnBoardUpdated();
+                OnScoreUpdated();
+                OnTurnChanged();
+            }
+
+            if (r_Game.GameState != eGameState.Playing)
+            {
+                handleRoundEnd();
+            }
+        }
+
+        private void boardButton_Click(object sender, EventArgs e)
+        {
+            if (!r_Game.IsCurrentPlayerComputer)
+            {
+                Point cellLocation = (Point)((Button)sender).Tag;
+                r_Game.PlayUserTurn(cellLocation.X, cellLocation.Y);
+                processTurnFlow();
+            }
+        }
+
+        private void game_TurnChanged(bool i_IsPlayer1Turn)
+        {
+            r_Player1ScoreLabel.IsActiveTurn = i_IsPlayer1Turn;
+            r_Player2ScoreLabel.IsActiveTurn = !i_IsPlayer1Turn;
+        }
+    }
 }

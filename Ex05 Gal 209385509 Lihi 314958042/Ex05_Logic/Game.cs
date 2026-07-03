@@ -1,4 +1,5 @@
-﻿using Ex05_Logic.Enums;
+﻿using System;
+using Ex05_Logic.Enums;
 
 namespace Ex05_Logic
 {
@@ -10,6 +11,7 @@ namespace Ex05_Logic
         private readonly MonteCarloAI r_ComputerAI;
         private Player m_CurrentPlayer;
         private eGameState m_GameState;
+        public event Action<bool> TurnChanged;
 
         private eCellSign getOtherPlayerSign()
         {
@@ -48,7 +50,10 @@ namespace Ex05_Logic
 
         private void switchPlayer()
         {
-            m_CurrentPlayer = m_CurrentPlayer == r_Player1 ? r_Player2 : r_Player1;
+            bool isPlayer1Turn = (m_CurrentPlayer == r_Player1);
+
+            m_CurrentPlayer = isPlayer1Turn ? r_Player2 : r_Player1;
+            TurnChanged?.Invoke(!isPlayer1Turn);
         }
 
         private bool checkIfWinner(int i_Row, int i_Column)
@@ -79,14 +84,12 @@ namespace Ex05_Logic
 
         public void StartNewGame()
         {
+            const bool v_IsPlayer1Turn = true;
+
             clearGameBoard();
             m_GameState = eGameState.Playing;
             m_CurrentPlayer = r_Player1;
-        }
-
-        public void QuitGame()
-        {
-            m_GameState = eGameState.Quit;
+            TurnChanged?.Invoke(v_IsPlayer1Turn);
         }
 
         public eCellSign GetCellSign(int i_Row, int i_Column)
@@ -120,11 +123,6 @@ namespace Ex05_Logic
             playersScore[1] = r_Player2.PlayerScore;
 
             return playersScore;
-        }
-
-        public bool IsComputerExistsInGame()
-        {
-            return r_ComputerAI != null;
         }
 
         public eGameState GameState
