@@ -219,9 +219,7 @@ namespace Ex05_UI
 
             if (userChoice == DialogResult.Yes)
             {
-                r_Game.StartNewGame();
-                m_IsPlayer1Turn = true;
-                processTurnFlow();
+                startNewRound();
             }
             else
             {
@@ -231,16 +229,12 @@ namespace Ex05_UI
 
         private void processTurnFlow()
         {
-            onBoardUpdated();
-            onScoreUpdated();
-            updateTurnDisplay();
+            refreshDisplayState();
             if(r_Game.GameState == eGameState.Playing && r_Game.IsCurrentPlayerComputer)
             {
                 r_Game.PlayComputerTurn();
                 m_IsPlayer1Turn = !m_IsPlayer1Turn;
-                onBoardUpdated();
-                onScoreUpdated();
-                updateTurnDisplay();
+                refreshDisplayState();
             }
 
             if(r_Game.GameState != eGameState.Playing)
@@ -261,15 +255,27 @@ namespace Ex05_UI
             }
         }
 
+        private void startNewRound()
+        {
+            r_Game.StartNewGame();
+            m_IsPlayer1Turn = true;
+            processTurnFlow();
+        }
+
+        private void refreshDisplayState()
+        {
+            onBoardUpdated();
+            onScoreUpdated();
+            updateTurnDisplay();
+        }
+
         public FormBoard(GameSettings i_GameSettings)
         {
             r_GameSettings = i_GameSettings;
             r_Game = new Game(r_GameSettings.BoardSize, r_GameSettings.IsVsComputer);
             InitializeComponent();
             prepareBoard();
-            r_Game.StartNewGame();
-            m_IsPlayer1Turn = true;
-            processTurnFlow();
+            startNewRound();
         }
     }
 }
