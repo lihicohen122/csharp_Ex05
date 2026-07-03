@@ -11,12 +11,10 @@ namespace Ex05_UI
         private const int k_ButtonSize = 55;
         private const int k_ScorePanelHeight = 45;
         private const int k_FormPadding = 12;
-
         private readonly GameSettings r_GameSettings;
         private readonly Game r_Game;
-
-        private PlayerLabel r_Player1ScoreLabel;
-        private PlayerLabel r_Player2ScoreLabel;
+        private PlayerLabel m_Player1ScoreLabel;
+        private PlayerLabel m_Player2ScoreLabel;
         private Button[,] m_BoardButtons;
         private TableLayoutPanel m_BoardPanel;
 
@@ -24,10 +22,8 @@ namespace Ex05_UI
         {
             r_GameSettings = i_GameSettings;
             r_Game = new Game(r_GameSettings.BoardSize, r_GameSettings.IsVsComputer);
-
             InitializeComponent();
             prepareBoard();
-
             r_Game.StartNewGame();
             processTurnFlow();
         }
@@ -36,26 +32,26 @@ namespace Ex05_UI
 
         private void InitializeComponent()
         {
-            this.r_Player1ScoreLabel = new Ex05_UI.PlayerLabel();
-            this.r_Player2ScoreLabel = new Ex05_UI.PlayerLabel();
+            this.m_Player1ScoreLabel = new Ex05_UI.PlayerLabel();
+            this.m_Player2ScoreLabel = new Ex05_UI.PlayerLabel();
             this.SuspendLayout();
 
             // r_Player1ScoreLabel
-            this.r_Player1ScoreLabel.Name = "r_Player1ScoreLabel";
+            this.m_Player1ScoreLabel.Name = "m_Player1ScoreLabel";
 
             // r_Player2ScoreLabel
-            this.r_Player2ScoreLabel.Name = "r_Player2ScoreLabel";
+            this.m_Player2ScoreLabel.Name = "m_Player2ScoreLabel";
 
             // FormBoard
-            this.Controls.Add(this.r_Player2ScoreLabel);
-            this.Controls.Add(this.r_Player1ScoreLabel);
+            this.Controls.Add(this.m_Player2ScoreLabel);
+            this.Controls.Add(this.m_Player1ScoreLabel);
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.MaximizeBox = false;
             this.Name = "FormBoard";
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Text = "TicTacToeMisere";
 
-            this.Resize += new EventHandler(this.FormBoard_Resize);
+            this.Resize += new EventHandler(this.formBoard_Resize);
 
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -72,33 +68,30 @@ namespace Ex05_UI
 
             ClientSize = new Size(formWidth, formHeight);
             MinimumSize = new Size(300, 350);
-
             createBoardButtons(boardSize);
             initializePlayerLabels();
         }
 
         private void initializePlayerLabels()
         {
-            r_Player1ScoreLabel.PlayerName = r_GameSettings.Player1Name;
-            r_Player1ScoreLabel.Score = 0;
-            r_Player1ScoreLabel.Anchor = AnchorStyles.Bottom;
-
-            r_Player2ScoreLabel.PlayerName = r_GameSettings.Player2Name;
-            r_Player2ScoreLabel.Score = 0;
-            r_Player2ScoreLabel.Anchor = AnchorStyles.Bottom;
-
+            m_Player1ScoreLabel.PlayerName = r_GameSettings.Player1Name;
+            m_Player1ScoreLabel.Score = 0;
+            m_Player1ScoreLabel.Anchor = AnchorStyles.Bottom;
+            m_Player2ScoreLabel.PlayerName = r_GameSettings.Player2Name;
+            m_Player2ScoreLabel.Score = 0;
+            m_Player2ScoreLabel.Anchor = AnchorStyles.Bottom;
             positionScoreLabels();
         }
 
         private void positionScoreLabels()
         {
             const int k_Gap = 10;
-            int totalWidth = r_Player1ScoreLabel.Width + k_Gap + r_Player2ScoreLabel.Width;
+            int totalWidth = m_Player1ScoreLabel.Width + k_Gap + m_Player2ScoreLabel.Width;
             int startX = (this.ClientSize.Width - totalWidth) / 2;
             int startY = this.ClientSize.Height - k_ScorePanelHeight + 10;
 
-            r_Player1ScoreLabel.Location = new Point(startX, startY);
-            r_Player2ScoreLabel.Location = new Point(startX + r_Player1ScoreLabel.Width + k_Gap, startY);
+            m_Player1ScoreLabel.Location = new Point(startX, startY);
+            m_Player2ScoreLabel.Location = new Point(startX + m_Player1ScoreLabel.Width + k_Gap, startY);
         }
 
         private void createBoardButtons(int i_BoardSize)
@@ -107,12 +100,12 @@ namespace Ex05_UI
             m_BoardPanel.RowCount = i_BoardSize;
             m_BoardPanel.ColumnCount = i_BoardSize;
             m_BoardPanel.Location = new Point(k_FormPadding, k_FormPadding);
-
             int panelSize = ClientSize.Width - (k_FormPadding * 2);
+
             m_BoardPanel.Size = new Size(panelSize, panelSize);
             m_BoardPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
-            for (int i = 0; i < i_BoardSize; i++)
+            for(int i = 0; i < i_BoardSize; i++)
             {
                 m_BoardPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / i_BoardSize));
                 m_BoardPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100f / i_BoardSize));
@@ -120,19 +113,17 @@ namespace Ex05_UI
 
             m_BoardButtons = new Button[i_BoardSize, i_BoardSize];
 
-            for (int row = 0; row < i_BoardSize; ++row)
+            for(int row = 0; row < i_BoardSize; ++row)
             {
-                for (int column = 0; column < i_BoardSize; ++column)
+                for(int column = 0; column < i_BoardSize; ++column)
                 {
                     Button boardButton = new Button();
+
                     boardButton.Dock = DockStyle.Fill;
                     boardButton.Margin = new Padding(2);
                     boardButton.Font = new Font("Microsoft Sans Serif", 11f);
                     boardButton.Tag = new Point(row, column);
-
-                    // כפתור נקי לחלוטין - המנוע הקלאסי יצייר אותו כתלת-מימד
                     boardButton.Click += boardButton_Click;
-
                     m_BoardButtons[row, column] = boardButton;
                     m_BoardPanel.Controls.Add(boardButton, column, row);
                 }
@@ -141,18 +132,18 @@ namespace Ex05_UI
             Controls.Add(m_BoardPanel);
         }
 
-        private void FormBoard_Resize(object sender, EventArgs e)
+        private void formBoard_Resize(object sender, EventArgs e)
         {
             positionScoreLabels();
 
-            if (m_BoardButtons != null && m_BoardButtons[0, 0] != null)
+            if(m_BoardButtons != null && m_BoardButtons[0, 0] != null)
             {
                 int buttonHeight = m_BoardButtons[0, 0].Height;
                 float newFontSize = Math.Max(8f, buttonHeight / 3.5f);
 
-                for (int row = 0; row < r_GameSettings.BoardSize; ++row)
+                for(int row = 0; row < r_GameSettings.BoardSize; ++row)
                 {
-                    for (int column = 0; column < r_GameSettings.BoardSize; ++column)
+                    for(int column = 0; column < r_GameSettings.BoardSize; ++column)
                     {
                         m_BoardButtons[row, column].Font = new Font("Microsoft Sans Serif", newFontSize);
                     }
@@ -160,15 +151,15 @@ namespace Ex05_UI
             }
         }
 
-        private void UpdateTurnDisplay()
+        private void updateTurnDisplay()
         {
             int filledCellsCount = 0;
 
-            for (int row = 0; row < r_Game.BoardSize; ++row)
+            for(int row = 0; row < r_Game.BoardSize; ++row)
             {
-                for (int column = 0; column < r_Game.BoardSize; ++column)
+                for(int column = 0; column < r_Game.BoardSize; ++column)
                 {
-                    if (r_Game.GetCellSign(row, column) != eCellSign.Empty)
+                    if(r_Game.GetCellSign(row, column) != eCellSign.Empty)
                     {
                         filledCellsCount++;
                     }
@@ -177,24 +168,24 @@ namespace Ex05_UI
 
             bool isPlayer1Turn = (filledCellsCount % 2 == 0);
 
-            r_Player1ScoreLabel.IsActiveTurn = isPlayer1Turn;
-            r_Player2ScoreLabel.IsActiveTurn = !isPlayer1Turn;
+            m_Player1ScoreLabel.IsActiveTurn = isPlayer1Turn;
+            m_Player2ScoreLabel.IsActiveTurn = !isPlayer1Turn;
         }
 
-        private void OnScoreUpdated()
+        private void onScoreUpdated()
         {
             int[] playersScore = r_Game.GetAllPlayersScore();
-            r_Player1ScoreLabel.Score = playersScore[0];
-            r_Player2ScoreLabel.Score = playersScore[1];
+            m_Player1ScoreLabel.Score = playersScore[0];
+            m_Player2ScoreLabel.Score = playersScore[1];
 
             positionScoreLabels();
         }
 
-        private void OnBoardUpdated()
+        private void onBoardUpdated()
         {
-            for (int row = 0; row < r_Game.BoardSize; ++row)
+            for(int row = 0; row < r_Game.BoardSize; ++row)
             {
-                for (int column = 0; column < r_Game.BoardSize; ++column)
+                for(int column = 0; column < r_Game.BoardSize; ++column)
                 {
                     eCellSign cellSign = r_Game.GetCellSign(row, column);
                     bool isEmpty = cellSign == eCellSign.Empty;
@@ -208,11 +199,12 @@ namespace Ex05_UI
         private string getSignAsString(eCellSign i_CellSign)
         {
             string signAsString = string.Empty;
-            if (i_CellSign == eCellSign.Cross)
+
+            if(i_CellSign == eCellSign.Cross)
             {
                 signAsString = "X";
             }
-            else if (i_CellSign == eCellSign.Circle)
+            else if(i_CellSign == eCellSign.Circle)
             {
                 signAsString = "O";
             }
@@ -225,7 +217,7 @@ namespace Ex05_UI
             string messageBoxText = string.Empty;
             string messageBoxTitle = string.Empty;
 
-            if (r_Game.GameState == eGameState.Tie)
+            if(r_Game.GameState == eGameState.Tie)
             {
                 messageBoxTitle = "A Tie!";
                 messageBoxText = $"Tie!{Environment.NewLine}Would you like to play another round?";
@@ -256,20 +248,20 @@ namespace Ex05_UI
 
         private void processTurnFlow()
         {
-            OnBoardUpdated();
-            OnScoreUpdated();
-            UpdateTurnDisplay();
+            onBoardUpdated();
+            onScoreUpdated();
+            updateTurnDisplay();
 
-            if (r_Game.GameState == eGameState.Playing && r_Game.IsCurrentPlayerComputer)
+            if(r_Game.GameState == eGameState.Playing && r_Game.IsCurrentPlayerComputer)
             {
                 r_Game.PlayComputerTurn();
 
-                OnBoardUpdated();
-                OnScoreUpdated();
-                UpdateTurnDisplay();
+                onBoardUpdated();
+                onScoreUpdated();
+                updateTurnDisplay();
             }
 
-            if (r_Game.GameState != eGameState.Playing)
+            if(r_Game.GameState != eGameState.Playing)
             {
                 handleRoundEnd();
             }
@@ -277,9 +269,10 @@ namespace Ex05_UI
 
         private void boardButton_Click(object sender, EventArgs e)
         {
-            if (!r_Game.IsCurrentPlayerComputer)
+            if(!r_Game.IsCurrentPlayerComputer)
             {
                 Point cellLocation = (Point)((Button)sender).Tag;
+
                 r_Game.PlayUserTurn(cellLocation.X, cellLocation.Y);
                 processTurnFlow();
             }
