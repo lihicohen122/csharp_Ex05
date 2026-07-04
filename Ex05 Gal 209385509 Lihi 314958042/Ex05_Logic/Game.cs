@@ -5,6 +5,7 @@ namespace Ex05_Logic
 {
     public class Game
     {
+        private const int k_NumOfPlayers = 2;
         private readonly Board r_Board;
         private readonly Player r_Player1;
         private readonly Player r_Player2;
@@ -125,7 +126,7 @@ namespace Ex05_Logic
 
         public int[] GetAllPlayersScore()
         {
-            int[] playersScore = new int[2];
+            int[] playersScore = new int[k_NumOfPlayers];
 
             playersScore[0] = r_Player1.PlayerScore;
             playersScore[1] = r_Player2.PlayerScore;

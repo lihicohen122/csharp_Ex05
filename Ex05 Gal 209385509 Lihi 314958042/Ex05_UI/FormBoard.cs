@@ -8,9 +8,13 @@ namespace Ex05_UI
 {
     public class FormBoard : Form
     {
+        private const float k_MinimumButtonFontSize = 8f;
+        private const float k_ButtonHeightToFontRatio = 3.5f;
         private const int k_ButtonSize = 55;
         private const int k_ScorePanelHeight = 45;
         private const int k_FormPadding = 12;
+        private const int k_MinWindowWidth = 300;
+        private const int k_MinWindowHeight = 350;
         private readonly GameSettings r_GameSettings;
         private readonly Game r_Game;
         private PlayerLabel m_Player1ScoreLabel;
@@ -58,7 +62,7 @@ namespace Ex05_UI
             int formHeight = boardPixelSize + k_ScorePanelHeight + (k_FormPadding * 2);
 
             ClientSize = new Size(formWidth, formHeight);
-            MinimumSize = new Size(300, 350);
+            MinimumSize = new Size(k_MinWindowWidth, k_MinWindowHeight);
             createBoardButtons(boardSize);
             initializePlayerLabels();
         }
@@ -139,7 +143,7 @@ namespace Ex05_UI
             if(m_BoardButtons != null && m_BoardButtons[0, 0] != null)
             {
                 int buttonHeight = m_BoardButtons[0, 0].Height;
-                float newFontSize = Math.Max(8f, buttonHeight / 3.5f);
+                float newFontSize = Math.Max(k_MinimumButtonFontSize, buttonHeight / k_ButtonHeightToFontRatio);
 
                 for(int row = 0; row < r_GameSettings.BoardSize; ++row)
                 {

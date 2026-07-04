@@ -5,6 +5,7 @@ namespace Ex05_UI
 {
     public class PlayerLabel : Label
     {
+        private const int k_DefaultPlayerLabelFontSize = 10;
         private string m_PlayerName = string.Empty;
         private int m_Score = 0;
         private bool m_IsActiveTurn = false;
@@ -17,12 +18,11 @@ namespace Ex05_UI
         public PlayerLabel()
         {
             AutoSize = true;
-            Font = new Font("Microsoft Sans Serif", 10);
+            Font = new Font("Microsoft Sans Serif", k_DefaultPlayerLabelFontSize);
         }
 
         public string PlayerName
         {
-            get { return m_PlayerName; }
             set
             {
                 m_PlayerName = value;
@@ -32,7 +32,6 @@ namespace Ex05_UI
 
         public int Score
         {
-            get { return m_Score; }
             set
             {
                 m_Score = value;
@@ -42,7 +41,6 @@ namespace Ex05_UI
 
         public bool IsActiveTurn
         {
-            get { return m_IsActiveTurn; }
             set
             {
                 m_IsActiveTurn = value;
