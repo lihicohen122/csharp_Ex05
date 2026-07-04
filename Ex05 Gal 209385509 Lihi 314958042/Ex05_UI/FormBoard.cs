@@ -217,7 +217,7 @@ namespace Ex05_UI
 
             DialogResult userChoice = MessageBox.Show(messageBoxText, messageBoxTitle, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
-            if (userChoice == DialogResult.Yes)
+            if(userChoice == DialogResult.Yes)
             {
                 startNewRound();
             }
@@ -246,10 +246,15 @@ namespace Ex05_UI
         {
             if(!r_Game.IsCurrentPlayerComputer)
             {
-                Point cellLocation = (Point)((Button)sender).Tag;
+                Button clickedButton = sender as Button;
 
-                r_Game.PlayUserTurn(cellLocation.X, cellLocation.Y);
-                processTurnFlow();
+                if(clickedButton != null)
+                {
+                    Point cellLocation = (Point)clickedButton.Tag;
+
+                    r_Game.PlayUserTurn(cellLocation.X, cellLocation.Y);
+                    processTurnFlow();
+                }
             }
         }
 

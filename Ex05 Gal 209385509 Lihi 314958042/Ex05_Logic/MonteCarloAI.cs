@@ -41,7 +41,6 @@ namespace Ex05_Logic
             while(!isGameOver && !i_SimulatedBoard.IsBoardFull())
             {
                 executeRandomMove(i_SimulatedBoard, currentTurnSign, out isGameOver);
-
                 if(isGameOver)
                 {
                     playOutScore = currentTurnSign == i_HumanSign ? k_WinWeight : k_LoseWeight;

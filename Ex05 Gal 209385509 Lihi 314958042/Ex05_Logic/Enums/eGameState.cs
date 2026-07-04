@@ -6,6 +6,5 @@
         Player1Won,
         Player2Won,
         Tie,
-        Quit,
     }
 }
