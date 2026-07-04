@@ -233,7 +233,6 @@ namespace Ex05_UI
             if(r_Game.GameState == eGameState.Playing && r_Game.IsCurrentPlayerComputer)
             {
                 r_Game.PlayComputerTurn();
-                m_IsPlayer1Turn = !m_IsPlayer1Turn;
                 refreshDisplayState();
             }
 
@@ -250,7 +249,6 @@ namespace Ex05_UI
                 Point cellLocation = (Point)((Button)sender).Tag;
 
                 r_Game.PlayUserTurn(cellLocation.X, cellLocation.Y);
-                m_IsPlayer1Turn = !m_IsPlayer1Turn;
                 processTurnFlow();
             }
         }
@@ -258,7 +256,6 @@ namespace Ex05_UI
         private void startNewRound()
         {
             r_Game.StartNewGame();
-            m_IsPlayer1Turn = true;
             processTurnFlow();
         }
 
@@ -269,10 +266,16 @@ namespace Ex05_UI
             updateTurnDisplay();
         }
 
+        private void game_TurnChanged(bool i_IsPlayer1Turn)
+        {
+            m_IsPlayer1Turn = i_IsPlayer1Turn;
+        }
+
         public FormBoard(GameSettings i_GameSettings)
         {
             r_GameSettings = i_GameSettings;
             r_Game = new Game(r_GameSettings.BoardSize, r_GameSettings.IsVsComputer);
+            r_Game.TurnChanged += game_TurnChanged;
             InitializeComponent();
             prepareBoard();
             startNewRound();

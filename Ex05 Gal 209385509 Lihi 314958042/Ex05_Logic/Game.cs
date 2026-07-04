@@ -53,7 +53,7 @@ namespace Ex05_Logic
             bool isPlayer1Turn = (m_CurrentPlayer == r_Player1);
 
             m_CurrentPlayer = isPlayer1Turn ? r_Player2 : r_Player1;
-            TurnChanged?.Invoke(!isPlayer1Turn);
+            OnTurnChanged(!isPlayer1Turn);
         }
 
         private bool checkIfWinner(int i_Row, int i_Column)
@@ -69,6 +69,14 @@ namespace Ex05_Logic
         private void clearGameBoard()
         {
             r_Board.ClearBoard();
+        }
+
+        protected virtual void OnTurnChanged(bool i_IsPlayer1Turn)
+        {
+            if(TurnChanged != null)
+            {
+                TurnChanged.Invoke(i_IsPlayer1Turn);
+            }
         }
 
         public Game(int i_BoardSize, bool i_IsOpponentComputer)
@@ -89,7 +97,7 @@ namespace Ex05_Logic
             clearGameBoard();
             m_GameState = eGameState.Playing;
             m_CurrentPlayer = r_Player1;
-            TurnChanged?.Invoke(v_IsPlayer1Turn);
+            OnTurnChanged(v_IsPlayer1Turn);
         }
 
         public eCellSign GetCellSign(int i_Row, int i_Column)
