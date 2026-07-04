@@ -157,7 +157,7 @@ namespace Ex05_UI
             m_Player2ScoreLabel.IsActiveTurn = !m_IsPlayer1Turn;
         }
 
-        private void onScoreUpdated()
+        private void updateScoreDisplay()
         {
             int[] playersScore = r_Game.GetAllPlayersScore();
 
@@ -166,7 +166,7 @@ namespace Ex05_UI
             positionScoreLabels();
         }
 
-        private void onBoardUpdated()
+        private void updateBoardDisplay()
         {
             for(int row = 0; row < r_Game.BoardSize; ++row)
             {
@@ -261,8 +261,8 @@ namespace Ex05_UI
 
         private void refreshDisplayState()
         {
-            onBoardUpdated();
-            onScoreUpdated();
+            updateBoardDisplay();
+            updateScoreDisplay();
             updateTurnDisplay();
         }
 
