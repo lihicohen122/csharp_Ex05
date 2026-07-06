@@ -203,8 +203,8 @@ namespace Ex05_UI
 
         private void handleRoundEnd()
         {
-            string messageBoxText;
-            string messageBoxTitle;
+            string messageBoxText = string.Empty;
+            string messageBoxTitle = string.Empty; 
 
             if(r_Game.GameState == eGameState.Tie)
             {

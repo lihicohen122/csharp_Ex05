@@ -15,7 +15,7 @@ namespace Ex05_Logic
         private int simulateSinglePlayRound(Board i_SimulatedBoard, int i_FirstMoveRow, int i_FirstMoveColumn,
                                             eCellSign i_ComputerSign, eCellSign i_HumanSign)
         {
-            int playOutScore;
+            int playOutScore = 0;
 
             i_SimulatedBoard.TryUpdateCell(i_FirstMoveRow, i_FirstMoveColumn, i_ComputerSign);
             bool isGameOver = i_SimulatedBoard.CheckWinningSequence(i_FirstMoveRow, i_FirstMoveColumn, i_ComputerSign);
